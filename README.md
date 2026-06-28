@@ -176,4 +176,5 @@ Master's Student
 
 Control, Microelectronics and Microsystems
 
-University of Siegen
+University of Bremen
+

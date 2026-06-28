@@ -11,6 +11,7 @@ find_package(std_msgs REQUIRED)
 
 include_directories(
   include
+  src
   /home/rushiksaiii/Downloads/DynamixelSDK/c++/include
   /home/rushiksaiii/Downloads/DynamixelSDK/c++/include/dynamixel_sdk
 )
@@ -32,36 +33,34 @@ set(DXL_SDK_SRC
 
 add_executable(
   motor_controller
-  src/motor_controller.cpp
-  src/dynamixel_interface.cpp
+  src/test/motor_controller.cpp
+  src/interface/dynamixel_interface.cpp
   ${DXL_SDK_SRC}
 )
-
 add_executable(
   sdk_ping_test
-  src/sdk_ping_test.cpp
-  src/dynamixel_interface.cpp
+  src/test/sdk_ping_test.cpp
+  src/interface/dynamixel_interface.cpp
   ${DXL_SDK_SRC}
 )
-
 add_executable(
   pan_control
   src/pan_control.cpp
-  src/dynamixel_interface.cpp
+  src/interface/dynamixel_interface.cpp
   ${DXL_SDK_SRC}
 )
 
 add_executable(
   tilt_control
   src/tilt_control.cpp
-  src/dynamixel_interface.cpp
+  src/interface/dynamixel_interface.cpp
   ${DXL_SDK_SRC}
 )
 
 add_executable(
   dual_control
   src/dual_control.cpp
-  src/dynamixel_interface.cpp
+  src/interface/dynamixel_interface.cpp
   ${DXL_SDK_SRC}
 )
 

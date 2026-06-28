@@ -1,6 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float64.hpp"
 
+#include "interface/dynamixel_interface.hpp"
 class DualControl : public rclcpp::Node
 {
 public:

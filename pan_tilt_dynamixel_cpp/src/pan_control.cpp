@@ -1,7 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float64.hpp"
 
-#include "dynamixel_interface.hpp"
+#include "interface/dynamixel_interface.hpp"
 
 class PanControl : public rclcpp::Node
 {

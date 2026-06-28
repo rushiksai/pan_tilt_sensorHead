@@ -1,4 +1,4 @@
-#include "dynamixel_interface.hpp"
+#include "interface/dynamixel_interface.hpp"
 
 #include <iostream>
 

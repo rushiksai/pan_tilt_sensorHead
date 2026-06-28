@@ -1,0 +1,23 @@
+# ROS2 build files
+build/
+install/
+log/
+
+# VS Code
+.vscode/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Compiled files
+*.o
+*.so
+*.a
+
+# Temporary files
+*.swp
+*~
+.DS_Store

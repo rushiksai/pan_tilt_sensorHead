@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<robot name="pan_tilt_head" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- WORLD LINK -->
+  <link name="world"/>
+
+  <!-- world to base -->
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
+  <!-- ================= BASE ================= -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.06" length="0.08"/>
+      </geometry>
+      <origin xyz="0 0 0.04"/>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.15"/>
+      <origin xyz="0 0 0.04"/>
+      <inertia ixx="0.001" iyy="0.001" izz="0.001"
+              ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <collision>
+      <geometry>
+        <box size="0.2 0.05 0.05"/>
+      </geometry>
+    </collision>
+  </link>
+  
+  <!-- ================= PAN ================= -->
+  <link name="pan_link">
+  <visual>
+    <geometry>
+      <cylinder radius="0.03" length="0.20"/>
+    </geometry>
+    <origin xyz="0 0 0.10"/>
+    <material name="green">
+      <color rgba="0 1 0 1"/>
+    </material>
+  </visual>
+    <inertial>
+    <mass value="0.08"/>
+    <origin xyz="0 0 0.1"/>
+    <inertia ixx="0.001" iyy="0.001" izz="0.001"
+            ixy="0" ixz="0" iyz="0"/>
+  </inertial>
+    <collision>
+  <geometry>
+    <box size="0.2 0.05 0.05"/>
+  </geometry>
+</collision>
+  </link>
+
+  <joint name="pan_joint" type="revolute">
+  <parent link="base_link"/>
+  <child link="pan_link"/>
+  <origin xyz="0 0 0.02"/>
+  <axis xyz="0 0 1"/>
+
+  <limit lower="-3.14" upper="3.14" effort="5.0" velocity="1.0"/>
+  </joint>
+  <!-- ================= TILT ================= -->
+  <link name="tilt_link">
+  <visual>
+    <geometry>
+      <box size="0.20 0.04 0.04"/>
+    </geometry>
+    <origin xyz="0.10 0 0"/>
+    <material name="red">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <inertial>
+  <mass value="0.086"/>
+  <origin xyz="0.1 0 0"/>
+  <inertia ixx="0.001" iyy="0.001" izz="0.001"
+           ixy="0" ixz="0" iyz="0"/>
+</inertial>
+   <collision>
+  <geometry>
+    <box size="0.2 0.05 0.05"/>
+  </geometry>
+</collision>
+  </link>
+
+    <joint name="tilt_joint" type="revolute">
+  <parent link="pan_link"/>
+  <child link="tilt_link"/>
+  <origin xyz="0 0 0.20"/>
+  <axis xyz="0 1 0"/>
+
+  <limit lower="-1.57" upper="0.78" effort="5.0" velocity="1.0"/>
+</joint>
+  <!-- ================= CAMERA ================= -->
+  <link name="camera_link">
+    <visual>
+      <geometry>
+        <box size="0.06 0.06 0.06"/>
+      </geometry>
+      <origin xyz="0.2 0 0"/>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="camera_fixed" type="fixed">
+    <parent link="tilt_link"/>
+    <child link="camera_link"/>
+  </joint>
+<!-- ros2_control -->
+<ros2_control name="Sensor_head_control" type="system">
+
+  <hardware>
+    <plugin>gz_ros2_control/GazeboSystem</plugin>
+  </hardware>
+
+  <joint name="pan_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+
+  <joint name="tilt_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+
+</ros2_control>
+
+<!-- Gazebo plugin MUST be separate -->
+<gazebo>
+  <plugin filename="libgz_ros2_control-system.so"
+          name="gz_ros2_control">
+    <parameters>config/controllers.yaml</parameters>
+  </plugin>
+</gazebo>
+</robot>

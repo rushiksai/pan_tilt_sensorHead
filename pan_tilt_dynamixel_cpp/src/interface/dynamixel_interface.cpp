@@ -5,12 +5,13 @@
 
 #define PROTOCOL_VERSION 2.0
 
-#define DXL_ID 1
+
 
 #define ADDR_OPERATING_MODE      11
 #define ADDR_TORQUE_ENABLE       64
 #define ADDR_PROFILE_VELOCITY   112
 #define ADDR_GOAL_POSITION      116
+#define ADDR_PRESENT_POSITION   132
 
 #define TORQUE_ENABLE 1
 
@@ -26,7 +27,8 @@ DynamixelInterface::DynamixelInterface()
 
 bool DynamixelInterface::connect(
     const std::string &device_name,
-    int baudrate)
+    int baudrate,
+    int dxl_id)
 {
     portHandler_ =
         dynamixel::PortHandler::getPortHandler(
@@ -57,11 +59,10 @@ bool DynamixelInterface::connect(
 
     int dxl_comm_result =
         packetHandler_->ping(
-            portHandler_,
-            DXL_ID,
-            &model_number,
-            &dxl_error);
-
+        portHandler_,
+        dxl_id,
+        &model_number,
+        &dxl_error);
     if (dxl_comm_result != COMM_SUCCESS)
     {
         std::cout
@@ -79,7 +80,7 @@ bool DynamixelInterface::connect(
 
     packetHandler_->read1ByteTxRx(
         portHandler_,
-        DXL_ID,
+        dxl_id,
         ADDR_OPERATING_MODE,
         &operating_mode,
         &dxl_error);
@@ -91,7 +92,7 @@ bool DynamixelInterface::connect(
 
     packetHandler_->write1ByteTxRx(
         portHandler_,
-        DXL_ID,
+        dxl_id,
         ADDR_TORQUE_ENABLE,
         TORQUE_ENABLE,
         &dxl_error);
@@ -140,6 +141,106 @@ bool DynamixelInterface::setProfileVelocity(
     std::cout
         << "Profile Velocity = "
         << velocity
+        << std::endl;
+
+    return true;
+}
+
+double DynamixelInterface::getCurrentPosition(
+    int dxl_id)
+{
+    uint8_t dxl_error = 0;
+
+    uint32_t present_position = 0;
+
+    int dxl_comm_result =
+        packetHandler_->read4ByteTxRx(
+            portHandler_,
+            dxl_id,
+            ADDR_PRESENT_POSITION,
+            &present_position,
+            &dxl_error);
+
+    if (dxl_comm_result != COMM_SUCCESS)
+    {
+        std::cout
+            << packetHandler_->getTxRxResult(
+                   dxl_comm_result)
+            << std::endl;
+
+        return 0.0;
+    }
+
+    std::cout
+        << "Present Position = "
+        << present_position
+        << std::endl;
+
+    return static_cast<double>(present_position);
+}
+
+bool DynamixelInterface::moveRelativeCounts(
+    int dxl_id,
+    int offset_counts)
+{
+    uint8_t dxl_error = 0;
+
+    uint32_t present_position = 0;
+
+    int dxl_comm_result =
+        packetHandler_->read4ByteTxRx(
+            portHandler_,
+            dxl_id,
+            ADDR_PRESENT_POSITION,
+            &present_position,
+            &dxl_error);
+
+    if (dxl_comm_result != COMM_SUCCESS)
+    {
+        std::cout
+            << packetHandler_->getTxRxResult(
+                   dxl_comm_result)
+            << std::endl;
+
+        return false;
+    }
+
+    int goal_position =
+        static_cast<int>(present_position)
+        + offset_counts;
+
+    if (goal_position < DXL_MIN_POSITION)
+        goal_position = DXL_MIN_POSITION;
+
+    if (goal_position > DXL_MAX_POSITION)
+        goal_position = DXL_MAX_POSITION;
+
+    dxl_comm_result =
+        packetHandler_->write4ByteTxRx(
+            portHandler_,
+            dxl_id,
+            ADDR_GOAL_POSITION,
+            goal_position,
+            &dxl_error);
+
+    if (dxl_comm_result != COMM_SUCCESS)
+    {
+        std::cout
+            << packetHandler_->getTxRxResult(
+                   dxl_comm_result)
+            << std::endl;
+
+        return false;
+    }
+
+    std::cout
+        << "Current Encoder = "
+        << present_position
+        << std::endl;
+
+    std::cout
+        << "Goal Encoder = "
+        << goal_position
         << std::endl;
 
     return true;

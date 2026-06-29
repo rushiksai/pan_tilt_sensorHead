@@ -14,23 +14,23 @@ public:
         // Connect to Dynamixel
         //-----------------------------------------
 
-        if (!dxl_.connect("/dev/ttyUSB0", 57600))
+        if (!dxl_.connect("/dev/ttyUSB1", 57600, 2))
         {
             RCLCPP_ERROR(
                 this->get_logger(),
                 "Failed to connect to Dynamixel!"
             );
-        }
-        else
-        {
-            RCLCPP_INFO(
-                this->get_logger(),
-                "Connected to Dynamixel."
-            );
 
-            // Slow movement for testing
-            dxl_.setProfileVelocity(2, 5);
+            return;
         }
+
+        RCLCPP_INFO(
+            this->get_logger(),
+            "Connected to Dynamixel."
+        );
+
+        // Slow movement for testing
+        dxl_.setProfileVelocity(2, 5);
 
         //-----------------------------------------
         // Subscriber
@@ -64,15 +64,18 @@ private:
         const std_msgs::msg::Float64::SharedPtr msg
     )
     {
+        int offset_counts =
+            static_cast<int>(msg->data);
+
         RCLCPP_INFO(
             this->get_logger(),
-            "Pan Goal Received: %.3f rad",
-            msg->data
+            "Pan Offset = %d counts",
+            offset_counts
         );
 
-        if (!dxl_.sendPositionCommand(
-                2,          // Pan Motor ID
-                msg->data))
+        if (!dxl_.moveRelativeCounts(
+                2,              // Pan Motor ID
+                offset_counts))
         {
             RCLCPP_ERROR(
                 this->get_logger(),
@@ -83,7 +86,8 @@ private:
 
     DynamixelInterface dxl_;
 
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr subscription_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr
+        subscription_;
 };
 
 int main(int argc, char * argv[])

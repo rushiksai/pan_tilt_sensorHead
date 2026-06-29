@@ -14,7 +14,7 @@ public:
         // Connect to Dynamixel
         //-----------------------------------------
 
-        if (!dxl_.connect("/dev/ttyUSB0", 57600))
+        if (!dxl_.connect("/dev/ttyUSB1", 57600,1))
         {
             RCLCPP_ERROR(
                 this->get_logger(),

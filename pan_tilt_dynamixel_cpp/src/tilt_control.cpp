@@ -14,23 +14,22 @@ public:
         // Connect to Dynamixel
         //-----------------------------------------
 
-        if (!dxl_.connect("/dev/ttyUSB0", 57600))
+        if (!dxl_.connect("/dev/ttyUSB1", 57600, 1))
         {
             RCLCPP_ERROR(
                 this->get_logger(),
                 "Failed to connect to Dynamixel!"
             );
-        }
-        else
-        {
-            RCLCPP_INFO(
-                this->get_logger(),
-                "Connected to Dynamixel."
-            );
 
-            // Slow movement for testing
-            dxl_.setProfileVelocity(1, 5);
+            return;
         }
+
+        RCLCPP_INFO(
+            this->get_logger(),
+            "Connected to Dynamixel."
+        );
+
+        dxl_.setProfileVelocity(1, 5);
 
         //-----------------------------------------
         // Subscriber
@@ -52,7 +51,6 @@ public:
             "Tilt Control Started"
         );
     }
-
     ~TiltControl()
     {
         dxl_.disconnect();
@@ -64,22 +62,25 @@ private:
         const std_msgs::msg::Float64::SharedPtr msg
     )
     {
+        int offset_counts =
+            static_cast<int>(msg->data);
+
         RCLCPP_INFO(
             this->get_logger(),
-            "Tilt Goal Received: %.3f rad",
-            msg->data
+            "Tilt Offset = %d counts",
+            offset_counts
         );
 
-        if (!dxl_.sendPositionCommand(
-                1,      // Tilt Motor ID
-                msg->data))
+        if (!dxl_.moveRelativeCounts(
+                1,              // Tilt Motor ID
+                offset_counts))
         {
             RCLCPP_ERROR(
                 this->get_logger(),
                 "Failed to move Tilt motor!"
             );
         }
-    }
+}
 
     DynamixelInterface dxl_;
 

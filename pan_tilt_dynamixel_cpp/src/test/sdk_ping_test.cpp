@@ -8,7 +8,7 @@ int main()
 
     std::cout << "Connecting..." << std::endl;
 
-    if (!dxl.connect("/dev/ttyUSB0", 57600))
+    if (!dxl.connect("/dev/ttyUSB1", 57600,2))
     {
         std::cout << "Connection Failed!" << std::endl;
         return 0;
@@ -16,11 +16,20 @@ int main()
 
     std::cout << "Connection Successful!" << std::endl;
 
+    double position =
+    dxl.getCurrentPosition(2);
+
+    std::cout
+        << "Current Encoder = "
+        << position
+        << std::endl;
+
     // VERY SLOW SPEED
-    dxl.setProfileVelocity(1, 1);
+    dxl.setProfileVelocity(2, 1);
 
     // Small movement (~0.57 degrees)
-    dxl.sendPositionCommand(1, 0.09);
+    // Move forward by 20 encoder counts
+    dxl.moveRelativeCounts(2, 1040);
 
     std::cout << "Motor moved successfully!" << std::endl;
 

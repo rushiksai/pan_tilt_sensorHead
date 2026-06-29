@@ -13,8 +13,8 @@ public:
     {
         bool success =
             dxl_interface_.connect(
-                "/dev/ttyUSB0",
-                57600
+                "/dev/ttyUSB1",
+                57600,1
             );
 
         if (success)

@@ -12,7 +12,8 @@ public:
 
     bool connect(
         const std::string &device_name,
-        int baudrate
+        int baudrate,
+        int dxl_id
     );
 
     void disconnect();
@@ -22,9 +23,18 @@ public:
         uint32_t velocity
     );
 
+    double getCurrentPosition(
+        int dxl_id
+    );
+
     bool sendPositionCommand(
         int dxl_id,
         double position_rad
+    );
+
+    bool moveRelativeCounts(
+        int dxl_id,
+        int offset_counts
     );
 
 private:

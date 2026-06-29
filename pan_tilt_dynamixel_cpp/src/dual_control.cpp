@@ -2,6 +2,7 @@
 #include "std_msgs/msg/float64.hpp"
 
 #include "interface/dynamixel_interface.hpp"
+
 class DualControl : public rclcpp::Node
 {
 public:
@@ -9,6 +10,33 @@ public:
     DualControl()
     : Node("dual_control")
     {
+        //-----------------------------------------
+        // Connect to Dynamixel
+        //-----------------------------------------
+
+        if (!dxl_.connect("/dev/ttyUSB0", 57600))
+        {
+            RCLCPP_ERROR(
+                this->get_logger(),
+                "Failed to connect to Dynamixel!"
+            );
+        }
+        else
+        {
+            RCLCPP_INFO(
+                this->get_logger(),
+                "Connected to Dynamixel."
+            );
+
+            // Slow profile velocity for testing
+            dxl_.setProfileVelocity(1, 5);   // Tilt
+            dxl_.setProfileVelocity(2, 5);   // Pan
+        }
+
+        //-----------------------------------------
+        // Pan Subscriber
+        //-----------------------------------------
+
         pan_subscription_ =
             this->create_subscription<std_msgs::msg::Float64>(
                 "/pan_goal",
@@ -19,6 +47,10 @@ public:
                     std::placeholders::_1
                 )
             );
+
+        //-----------------------------------------
+        // Tilt Subscriber
+        //-----------------------------------------
 
         tilt_subscription_ =
             this->create_subscription<std_msgs::msg::Float64>(
@@ -37,7 +69,16 @@ public:
         );
     }
 
+    ~DualControl()
+    {
+        dxl_.disconnect();
+    }
+
 private:
+
+    //-----------------------------------------
+    // Pan Callback
+    //-----------------------------------------
 
     void pan_callback(
         const std_msgs::msg::Float64::SharedPtr msg
@@ -45,10 +86,24 @@ private:
     {
         RCLCPP_INFO(
             this->get_logger(),
-            "Pan Goal: %.2f",
+            "Pan Goal Received: %.3f rad",
             msg->data
         );
+
+        if (!dxl_.sendPositionCommand(
+                2,
+                msg->data))
+        {
+            RCLCPP_ERROR(
+                this->get_logger(),
+                "Failed to move Pan motor!"
+            );
+        }
     }
+
+    //-----------------------------------------
+    // Tilt Callback
+    //-----------------------------------------
 
     void tilt_callback(
         const std_msgs::msg::Float64::SharedPtr msg
@@ -56,10 +111,22 @@ private:
     {
         RCLCPP_INFO(
             this->get_logger(),
-            "Tilt Goal: %.2f",
+            "Tilt Goal Received: %.3f rad",
             msg->data
         );
+
+        if (!dxl_.sendPositionCommand(
+                1,
+                msg->data))
+        {
+            RCLCPP_ERROR(
+                this->get_logger(),
+                "Failed to move Tilt motor!"
+            );
+        }
     }
+
+    DynamixelInterface dxl_;
 
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr
         pan_subscription_;
